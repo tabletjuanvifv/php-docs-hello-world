@@ -6,7 +6,10 @@ $dbUser = getenv('DB_USER');
 $dbPass = getenv('DB_PASSWORD');
 
 
-$conn = new mysqli($dbHost, $dbUser,$dbPass, "clientes");
+#$conn = new mysqli($dbHost, $dbUser,$dbPass, "clientes");
+$conn = new mysqli($dbHost, $dbUser,$dbPass, $dbName);
+
+
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
