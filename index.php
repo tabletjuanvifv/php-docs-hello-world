@@ -40,7 +40,7 @@ try {
     $reservadas = [];
     foreach ($fechas as $f) {
         $fecha = new DateTime($f["fecha_reserva"]);
-        $reservadas[] = [$fecha->format("n"), $fecha->format("j")]; // mes, día
+        $reservadas[] = $fecha->format("Y-m-d");
     }
 
 } catch (PDOException $e) {
@@ -56,9 +56,17 @@ try {
     <title>Reservas del Albergue</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        .month { margin-bottom: 40px; }
+        .month h3 { background: #007bff; color: white; padding: 10px; }
+        table.calendar { width: 100%; border-collapse: collapse; }
+        table.calendar th, table.calendar td {
+            border: 1px solid #ccc;
+            width: 14.28%;
+            height: 80px;
+            text-align: center;
+            vertical-align: top;
+        }
         .reservado { color: red; font-weight: bold; }
-        table.calendar { border-collapse: collapse; margin-bottom: 40px; }
-        table.calendar td, table.calendar th { border: 1px solid #ccc; padding: 5px; text-align: center; width: 40px; height: 40px; }
     </style>
 </head>
 <body class="bg-light">
@@ -68,29 +76,57 @@ try {
     <?php
     $anio = 2025;
     $diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+    $meses = [1=>"Enero",2=>"Febrero",3=>"Marzo",4=>"Abril",5=>"Mayo",6=>"Junio",7=>"Julio",8=>"Agosto",9=>"Septiembre",10=>"Octubre",11=>"Noviembre",12=>"Diciembre"];
 
-    for ($mes = 1; $mes <= 12; $mes++) {
-        echo "<h3>" . ucfirst(strftime('%B', mktime(0, 0, 0, $mes, 1))) . "</h3>";
-        echo "<table class='calendar table table-bordered'><tr>";
+    foreach ($meses as $mesNum => $mesNombre) {
+        echo "<div class='month'><h3>$mesNombre</h3><table class='calendar'>";
+        echo "<tr>";
         foreach ($diasSemana as $dia) {
             echo "<th>$dia</th>";
         }
-        echo "</tr><tr>";
+        echo "</tr>";
 
-        $cal = calendar::monthcalendar($anio, $mes);
-        foreach ($cal as $semana) {
+        $primerDia = new DateTime("$anio-$mesNum-01");
+        $primerDiaSemana = (int)$primerDia->format("N"); // 1 (Lun) a 7 (Dom)
+        $diasMes = cal_days_in_month(CAL_GREGORIAN, $mesNum, $anio);
+
+        $semana = array_fill(0, 7, 0);
+        $diaActual = 1;
+        $fila = [];
+
+        // Primera semana
+        for ($i = $primerDiaSemana - 1; $i < 7; $i++) {
+            $semana[$i] = $diaActual++;
+        }
+        $fila[] = $semana;
+
+        // Semanas siguientes
+        while ($diaActual <= $diasMes) {
+            $semana = array_fill(0, 7, 0);
+            for ($i = 0; $i < 7 && $diaActual <= $diasMes; $i++) {
+                $semana[$i] = $diaActual++;
+            }
+            $fila[] = $semana;
+        }
+
+        foreach ($fila as $semana) {
+            echo "<tr>";
             foreach ($semana as $dia) {
                 if ($dia == 0) {
                     echo "<td></td>";
-                } elseif (in_array([$mes, $dia], $reservadas)) {
-                    echo "<td class='reservado'>$dia ✖</td>";
                 } else {
-                    echo "<td>$dia</td>";
+                    $fecha_actual = sprintf('%04d-%02d-%02d', $anio, $mesNum, $dia);
+                    if (in_array($fecha_actual, $reservadas)) {
+                        echo "<td class='reservado'>$dia ✖</td>";
+                    } else {
+                        echo "<td>$dia</td>";
+                    }
                 }
             }
-            echo "</tr><tr>";
+            echo "</tr>";
         }
-        echo "</tr></table>";
+
+        echo "</table></div>";
     }
     ?>
 
