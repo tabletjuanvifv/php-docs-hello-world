@@ -23,6 +23,7 @@ try {
     $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
     // Procesar formulario
+    $reservaExitosa = false;
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([
@@ -32,6 +33,7 @@ try {
             $_POST["telefono"],
             $_POST["numero_personas"]
         ]);
+        $reservaExitosa = true;
     }
 
     // Obtener fechas reservadas
@@ -54,15 +56,15 @@ try {
 <head>
     <meta charset="UTF-8">
     <title>Reservas del Albergue</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css
     <style>
-        .month { margin-bottom: 40px; }
-        .month h3 { background: #007bff; color: white; padding: 10px; }
-        table.calendar { width: 100%; border-collapse: collapse; }
+        .month { margin-bottom: 20px; }
+        .month h3 { background: #007bff; color: white; padding: 5px; font-size: 1.2rem; }
+        table.calendar { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         table.calendar th, table.calendar td {
             border: 1px solid #ccc;
             width: 14.28%;
-            height: 80px;
+            height: 40px;
             text-align: center;
             vertical-align: top;
         }
@@ -70,7 +72,7 @@ try {
     </style>
 </head>
 <body class="bg-light">
-<div class="container py-5">
+<div class="container py-4">
     <h1 class="mb-4">Calendario de Reservas 2025</h1>
 
     <?php
@@ -130,13 +132,21 @@ try {
     }
     ?>
 
-    <div class="card mt-5">
+    <?php if ($reservaExitosa): ?>
+        <div class="alert alert-success">✅ La reserva se ha realizado correctamente.</div>
+    <?php endif; ?>
+
+    <div class="card mt-4">
         <div class="card-header bg-primary text-white">Formulario de Reserva</div>
         <div class="card-body">
             <form method="POST">
                 <div class="mb-3">
                     <label class="form-label">Fecha de reserva</label>
-                    <input type="date" name="fecha_reserva" class="form-control" required>
+                    <input type="date" name="fecha_reserva" class="form-control" required
+                           min="2025-01-01" max="2025-12-31"
+                           <?php if (!empty($reservadas)): ?>
+                               oninput="validarFecha(this)"
+                           <?php endif; ?>>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nombre</label>
@@ -159,7 +169,16 @@ try {
         </div>
     </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const fechasReservadas = <?= json_encode($reservadas) ?>;
+    function validarFecha(input) {
+        if (fechasReservadas.includes(input.value)) {
+            alert("⚠️ Esta fecha ya está reservada. Por favor, elige otra.");
+            input.value = "";
+        }
+    }
+</script>
+https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js</script>
 </body>
 </html>
-
