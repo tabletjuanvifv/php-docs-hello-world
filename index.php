@@ -1,27 +1,49 @@
-
 <?php
-// Conexión a la base de datos
-$conexion = new mysqli("localhost", "usuario", "contraseña", "nombre_base_datos");
-if ($conexion->connect_error) {
-    die("Error de conexión: " . $conexion->connect_error);
+// Recuperar variables de entorno
+$dbHost = getenv('DB_HOST');
+$dbName = "proyecto";
+$dbUser = getenv('DB_USER');
+$dbPass = getenv('DB_PASSWORD');
+
+if (!$dbHost || !$dbUser || $dbPass === false) {
+    throw new \RuntimeException('Faltan variables de entorno para la conexión a la base de datos.');
 }
 
-// Procesar el formulario
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $fecha = $_POST["fecha_reserva"];
-    $nombre = $_POST["nombre"];
-    $dni = $_POST["dni"];
-    $telefono = $_POST["telefono"];
-    $numero_personas = $_POST["numero_personas"];
+// DSN con charset utf8mb4
+$dsn = "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4";
 
-    $stmt = $conexion->prepare("INSERT INTO reservas(fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("ssssi", $fecha, $nombre, $dni, $telefono, $numero_personas);
-    $stmt->execute();
-    $stmt->close();
+try {
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::MYSQL_ATTR_SSL_CA => '/etc/ssl/certs/BaltimoreCyberTrustRoot.crt.pem',
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+    ];
+
+    $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
+
+    // Procesar el formulario
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $fecha = $_POST["fecha_reserva"];
+        $nombre = $_POST["nombre"];
+        $dni = $_POST["dni"];
+        $telefono = $_POST["telefono"];
+        $numero_personas = $_POST["numero_personas"];
+
+        $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$fecha, $nombre, $dni, $telefono, $numero_personas]);
+    }
+
+    // Obtener días ya reservados
+    $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas ORDER BY fecha_reserva ASC");
+    $fechasReservadas = $stmt->fetchAll();
+
+} catch (PDOException $e) {
+    error_log('Error de conexión PDO: ' . $e->getMessage());
+    echo "Error al conectar con la base de datos: " . htmlspecialchars($e->getMessage());
+    exit;
 }
-
-// Obtener días ya reservados
-$resultado = $conexion->query("SELECT DISTINCT fecha_reserva FROM reservas ORDER BY fecha_reserva ASC");
 ?>
 
 <!DOCTYPE html>
@@ -44,13 +66,9 @@ $resultado = $conexion->query("SELECT DISTINCT fecha_reserva FROM reservas ORDER
     <h2>Días ya reservados</h2>
     <table border="1">
         <tr><th>Fecha</th></tr>
-        <?php while ($fila = $resultado->fetch_assoc()): ?>
+        <?php foreach ($fechasReservadas as $fila): ?>
             <tr><td><?= htmlspecialchars($fila["fecha_reserva"]) ?></td></tr>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
     </table>
 </body>
 </html>
-
-<?php
-$conexion->close();
-?>
