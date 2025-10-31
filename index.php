@@ -56,7 +56,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <title>Reservas del Albergue</title>
-    https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .month { margin-bottom: 20px; }
         .month h3 { background: #007bff; color: white; padding: 5px; font-size: 1.2rem; }
@@ -89,20 +89,18 @@ try {
         echo "</tr>";
 
         $primerDia = new DateTime("$anio-$mesNum-01");
-        $primerDiaSemana = (int)$primerDia->format("N"); // 1 (Lun) a 7 (Dom)
+        $primerDiaSemana = (int)$primerDia->format("N");
         $diasMes = cal_days_in_month(CAL_GREGORIAN, $mesNum, $anio);
 
         $semana = array_fill(0, 7, 0);
         $diaActual = 1;
         $fila = [];
 
-        // Primera semana
         for ($i = $primerDiaSemana - 1; $i < 7; $i++) {
             $semana[$i] = $diaActual++;
         }
         $fila[] = $semana;
 
-        // Semanas siguientes
         while ($diaActual <= $diasMes) {
             $semana = array_fill(0, 7, 0);
             for ($i = 0; $i < 7 && $diaActual <= $diasMes; $i++) {
@@ -144,9 +142,7 @@ try {
                     <label class="form-label">Fecha de reserva</label>
                     <input type="date" name="fecha_reserva" class="form-control" required
                            min="2025-01-01" max="2025-12-31"
-                           <?php if (!empty($reservadas)): ?>
-                               oninput="validarFecha(this)"
-                           <?php endif; ?>>
+                           oninput="validarFecha(this)">
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Nombre</label>
@@ -179,6 +175,6 @@ try {
         }
     }
 </script>
-https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
