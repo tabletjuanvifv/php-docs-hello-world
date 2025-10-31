@@ -14,14 +14,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $telefono = $_POST["telefono"];
     $numero_personas = $_POST["numero_personas"];
 
-    $stmt = $conexion->prepare("INSERT INTO reservas_albergue (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $conexion->prepare("INSERT INTO reservas(fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("ssssi", $fecha, $nombre, $dni, $telefono, $numero_personas);
     $stmt->execute();
     $stmt->close();
 }
 
 // Obtener días ya reservados
-$resultado = $conexion->query("SELECT DISTINCT fecha_reserva FROM reservas_albergue ORDER BY fecha_reserva ASC");
+$resultado = $conexion->query("SELECT DISTINCT fecha_reserva FROM reservas ORDER BY fecha_reserva ASC");
 ?>
 
 <!DOCTYPE html>
