@@ -1,6 +1,5 @@
-
 <?php
-// Recuperar variables de entorno
+// Conexión PDO con variables de entorno
 $dbHost = getenv('DB_HOST');
 $dbName = "proyecto";
 $dbUser = getenv('DB_USER');
@@ -10,7 +9,6 @@ if (!$dbHost || !$dbUser || $dbPass === false) {
     throw new \RuntimeException('Faltan variables de entorno para la conexión a la base de datos.');
 }
 
-// DSN con charset utf8mb4
 $dsn = "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4";
 
 try {
@@ -24,24 +22,28 @@ try {
 
     $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
-    // Procesar el formulario
+    // Procesar formulario
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $fecha = $_POST["fecha_reserva"];
-        $nombre = $_POST["nombre"];
-        $dni = $_POST["dni"];
-        $telefono = $_POST["telefono"];
-        $numero_personas = $_POST["numero_personas"];
-
-        $stmt = $pdo->prepare("INSERT INTO reservas(fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$fecha, $nombre, $dni, $telefono, $numero_personas]);
+        $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $_POST["fecha_reserva"],
+            $_POST["nombre"],
+            $_POST["dni"],
+            $_POST["telefono"],
+            $_POST["numero_personas"]
+        ]);
     }
 
-    // Obtener días ya reservados
-    $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas ORDER BY fecha_reserva ASC");
-    $fechasReservadas = $stmt->fetchAll();
+    // Obtener fechas reservadas
+    $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas");
+    $fechas = $stmt->fetchAll();
+    $reservadas = [];
+    foreach ($fechas as $f) {
+        $fecha = new DateTime($f["fecha_reserva"]);
+        $reservadas[] = [$fecha->format("n"), $fecha->format("j")]; // mes, día
+    }
 
 } catch (PDOException $e) {
-    error_log('Error de conexión PDO: ' . $e->getMessage());
     echo "<div class='alert alert-danger'>Error al conectar con la base de datos: " . htmlspecialchars($e->getMessage()) . "</div>";
     exit;
 }
@@ -53,12 +55,46 @@ try {
     <meta charset="UTF-8">
     <title>Reservas del Albergue</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .reservado { color: red; font-weight: bold; }
+        table.calendar { border-collapse: collapse; margin-bottom: 40px; }
+        table.calendar td, table.calendar th { border: 1px solid #ccc; padding: 5px; text-align: center; width: 40px; height: 40px; }
+    </style>
 </head>
 <body class="bg-light">
 <div class="container py-5">
-    <h1 class="mb-4">Reservas del Albergue</h1>
+    <h1 class="mb-4">Calendario de Reservas 2025</h1>
 
-    <div class="card mb-5">
+    <?php
+    $anio = 2025;
+    $diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+    for ($mes = 1; $mes <= 12; $mes++) {
+        echo "<h3>" . ucfirst(strftime('%B', mktime(0, 0, 0, $mes, 1))) . "</h3>";
+        echo "<table class='calendar table table-bordered'><tr>";
+        foreach ($diasSemana as $dia) {
+            echo "<th>$dia</th>";
+        }
+        echo "</tr><tr>";
+
+        $cal = calendar::monthcalendar($anio, $mes);
+        foreach ($cal as $semana) {
+            foreach ($semana as $dia) {
+                if ($dia == 0) {
+                    echo "<td></td>";
+                } elseif (in_array([$mes, $dia], $reservadas)) {
+                    echo "<td class='reservado'>$dia ✖</td>";
+                } else {
+                    echo "<td>$dia</td>";
+                }
+            }
+            echo "</tr><tr>";
+        }
+        echo "</tr></table>";
+    }
+    ?>
+
+    <div class="card mt-5">
         <div class="card-header bg-primary text-white">Formulario de Reserva</div>
         <div class="card-body">
             <form method="POST">
@@ -84,22 +120,6 @@ try {
                 </div>
                 <button type="submit" class="btn btn-success">Reservar</button>
             </form>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header bg-secondary text-white">Días ya reservados</div>
-        <div class="card-body">
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr><th>Fecha</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($fechasReservadas as $fila): ?>
-                        <tr><td><?= htmlspecialchars($fila["fecha_reserva"]) ?></td></tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
         </div>
     </div>
 </div>
