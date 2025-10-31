@@ -26,7 +26,7 @@ try {
 // Procesar formulario
 $reservaExitosa = false;
 if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST["fecha_reserva"])) {
-    $stmt = $pdo->prepare("INSERT INTO reservas_albergue (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
     $stmt->execute([
         $_POST["fecha_reserva"],
         $_POST["nombre"],
