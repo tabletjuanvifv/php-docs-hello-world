@@ -1,3 +1,4 @@
+
 <?php
 // Recuperar variables de entorno
 $dbHost = getenv('DB_HOST');
@@ -31,17 +32,17 @@ try {
         $telefono = $_POST["telefono"];
         $numero_personas = $_POST["numero_personas"];
 
-        $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO reservas_albergue (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$fecha, $nombre, $dni, $telefono, $numero_personas]);
     }
 
     // Obtener días ya reservados
-    $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas ORDER BY fecha_reserva ASC");
+    $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas_albergue ORDER BY fecha_reserva ASC");
     $fechasReservadas = $stmt->fetchAll();
 
 } catch (PDOException $e) {
     error_log('Error de conexión PDO: ' . $e->getMessage());
-    echo "Error al conectar con la base de datos: " . htmlspecialchars($e->getMessage());
+    echo "<div class='alert alert-danger'>Error al conectar con la base de datos: " . htmlspecialchars($e->getMessage()) . "</div>";
     exit;
 }
 ?>
@@ -51,24 +52,57 @@ try {
 <head>
     <meta charset="UTF-8">
     <title>Reservas del Albergue</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    <h2>Formulario de Reserva</h2>
-    <form method="POST">
-        <label>Fecha de reserva: <input type="date" name="fecha_reserva" required></label><br>
-        <label>Nombre: <input type="text" name="nombre" required></label><br>
-        <label>DNI: <input type="text" name="dni" required></label><br>
-        <label>Teléfono: <input type="text" name="telefono"></label><br>
-        <label>Número de personas: <input type="number" name="numero_personas" min="1" required></label><br>
-        <input type="submit" value="Reservar">
-    </form>
+<body class="bg-light">
+<div class="container py-5">
+    <h1 class="mb-4">Reservas del Albergue</h1>
 
-    <h2>Días ya reservados</h2>
-    <table border="1">
-        <tr><th>Fecha</th></tr>
-        <?php foreach ($fechasReservadas as $fila): ?>
-            <tr><td><?= htmlspecialchars($fila["fecha_reserva"]) ?></td></tr>
-        <?php endforeach; ?>
-    </table>
+    <div class="card mb-5">
+        <div class="card-header bg-primary text-white">Formulario de Reserva</div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Fecha de reserva</label>
+                    <input type="date" name="fecha_reserva" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" name="nombre" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">DNI</label>
+                    <input type="text" name="dni" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Número de personas</label>
+                    <input type="number" name="numero_personas" class="form-control" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-success">Reservar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">Días ya reservados</div>
+        <div class="card-body">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr><th>Fecha</th></tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($fechasReservadas as $fila): ?>
+                        <tr><td><?= htmlspecialchars($fila["fecha_reserva"]) ?></td></tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
