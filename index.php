@@ -1,39 +1,56 @@
+
 <?php
-// Recuperar variables de entorno
-$dbHost = getenv('DB_HOST');
-$dbName = "proyecto";
-$dbUser = getenv('DB_USER');
-$dbPass = getenv('DB_PASSWORD');
-if (!$dbHost || !$dbUser || $dbPass === false) {
-throw new \RuntimeException('Faltan variables de entorno para la
-conexión a la base de datos.');
+// Conexión a la base de datos
+$conexion = new mysqli("localhost", "usuario", "contraseña", "nombre_base_datos");
+if ($conexion->connect_error) {
+    die("Error de conexión: " . $conexion->connect_error);
 }
-// DSN con charset utf8mb4
-$dsn = "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4";
-try {
-$options = [
-// Excepciones en errores
-PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-// Fetch como array asociativo
-PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-// Desactivar emulación de prepares
-PDO::ATTR_EMULATE_PREPARES => false,
-// Asegurar la conexión TLS hacia Azure Database for MySQL
-PDO::MYSQL_ATTR_SSL_CA =>
-'/etc/ssl/certs/BaltimoreCyberTrustRoot.crt.pem',
-// Desactivamos la validación del certificado SSL
-PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
-];
-// Crear la conexión PDO
-$pdo = new PDO($dsn, $dbUser, $dbPass, $options);
-// Ejemplo: consulta sencilla
-$stmt = $pdo->query('SELECT NOW() AS fecha_actual;');
-$fila = $stmt->fetch();
-echo "Conectado correctamente. Hora del servidor: " .
-$fila['fecha_actual'];
-} catch (PDOException $e) {
-error_log('Error de conexión PDO: ' . $e->getMessage());
-echo "Error al conectar con la base de datos: " .
-htmlspecialchars($e->getMessage());
-exit;
+
+// Procesar el formulario
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $fecha = $_POST["fecha_reserva"];
+    $nombre = $_POST["nombre"];
+    $dni = $_POST["dni"];
+    $telefono = $_POST["telefono"];
+    $numero_personas = $_POST["numero_personas"];
+
+    $stmt = $conexion->prepare("INSERT INTO reservas_albergue (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+    $stmt->bind_param("ssssi", $fecha, $nombre, $dni, $telefono, $numero_personas);
+    $stmt->execute();
+    $stmt->close();
 }
+
+// Obtener días ya reservados
+$resultado = $conexion->query("SELECT DISTINCT fecha_reserva FROM reservas_albergue ORDER BY fecha_reserva ASC");
+?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservas del Albergue</title>
+</head>
+<body>
+    <h2>Formulario de Reserva</h2>
+    <form method="POST">
+        <label>Fecha de reserva: <input type="date" name="fecha_reserva" required></label><br>
+        <label>Nombre: <input type="text" name="nombre" required></label><br>
+        <label>DNI: <input type="text" name="dni" required></label><br>
+        <label>Teléfono: <input type="text" name="telefono"></label><br>
+        <label>Número de personas: <input type="number" name="numero_personas" min="1" required></label><br>
+        <input type="submit" value="Reservar">
+    </form>
+
+    <h2>Días ya reservados</h2>
+    <table border="1">
+        <tr><th>Fecha</th></tr>
+        <?php while ($fila = $resultado->fetch_assoc()): ?>
+            <tr><td><?= htmlspecialchars($fila["fecha_reserva"]) ?></td></tr>
+        <?php endwhile; ?>
+    </table>
+</body>
+</html>
+
+<?php
+$conexion->close();
+?>
