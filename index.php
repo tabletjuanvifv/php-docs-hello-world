@@ -32,12 +32,12 @@ try {
         $telefono = $_POST["telefono"];
         $numero_personas = $_POST["numero_personas"];
 
-        $stmt = $pdo->prepare("INSERT INTO reservas_albergue (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO reservas(fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$fecha, $nombre, $dni, $telefono, $numero_personas]);
     }
 
     // Obtener días ya reservados
-    $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas_albergue ORDER BY fecha_reserva ASC");
+    $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas ORDER BY fecha_reserva ASC");
     $fechasReservadas = $stmt->fetchAll();
 
 } catch (PDOException $e) {
