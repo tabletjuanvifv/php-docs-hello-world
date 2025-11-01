@@ -59,16 +59,22 @@ try {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .month { margin-bottom: 20px; }
-        .month h3 { background: #007bff; color: white; padding: 5px; font-size: 1.2rem; }
-        table.calendar { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .month h3 { background: #007bff; color: white; padding: 5px; font-size: 1rem; }
+        table.calendar { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         table.calendar th, table.calendar td {
             border: 1px solid #ccc;
             width: 14.28%;
-            height: 40px;
+            height: 30px;
             text-align: center;
             vertical-align: top;
+            padding: 2px;
         }
-        .reservado { color: red; font-weight: bold; }
+        .reservado {
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="bg-light">
