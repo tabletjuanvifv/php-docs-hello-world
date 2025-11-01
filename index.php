@@ -22,21 +22,19 @@ try {
 
     $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
-   
-// Procesar formulario
-$reservaExitosa = false;
-if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST["fecha_reserva"])) {
-    $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([
-        $_POST["fecha_reserva"],
-        $_POST["nombre"],
-        $_POST["dni"],
-        $_POST["telefono"],
-        $_POST["numero_personas"]
-    ]);
-    $reservaExitosa = true;
-}
-
+    // Procesar formulario
+    $reservaExitosa = false;
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST["fecha_reserva"])) {
+        $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $_POST["fecha_reserva"],
+            $_POST["nombre"],
+            $_POST["dni"],
+            $_POST["telefono"],
+            $_POST["numero_personas"]
+        ]);
+        $reservaExitosa = true;
+    }
 
     // Obtener fechas reservadas
     $stmt = $pdo->query("SELECT DISTINCT fecha_reserva FROM reservas");
@@ -132,10 +130,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST["fecha_reserva"])) {
     }
     ?>
 
-    <?php if ($reservaExitosa): ?>
-        <div class="alert alert-success">✅ La reserva se ha realizado correctamente.</div>
-    <?php endif; ?>
-
     <div class="card mt-4">
         <div class="card-header bg-primary text-white">Formulario de Reserva</div>
         <div class="card-body">
@@ -177,6 +171,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST["fecha_reserva"])) {
         }
     }
 </script>
+
+<?php if ($reservaExitosa): ?>
+<script>
+    alert("✅ La reserva se ha realizado correctamente.");
+</script>
+<?php endif; ?>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
