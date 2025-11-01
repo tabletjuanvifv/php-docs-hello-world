@@ -22,8 +22,7 @@ try {
 
     $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
-    // Procesar formulario
-    $reservaExitosa = false;
+    // Procesar formulario con PRG
     if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($_POST["fecha_reserva"])) {
         $stmt = $pdo->prepare("INSERT INTO reservas (fecha_reserva, nombre, dni, telefono, numero_personas) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([
@@ -33,7 +32,10 @@ try {
             $_POST["telefono"],
             $_POST["numero_personas"]
         ]);
-        $reservaExitosa = true;
+
+        // Redirigir para evitar reenvío con F5
+        header("Location: " . $_SERVER['PHP_SELF'] . "?reserva=ok");
+        exit;
     }
 
     // Obtener fechas reservadas
@@ -178,7 +180,7 @@ try {
     }
 </script>
 
-<?php if ($reservaExitosa): ?>
+<?php if (isset($_GET['reserva']) && $_GET['reserva'] === 'ok'): ?>
 <script>
     alert("✅ La reserva se ha realizado correctamente.");
 </script>
