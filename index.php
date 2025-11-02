@@ -33,7 +33,6 @@ try {
             $_POST["numero_personas"]
         ]);
 
-        // Redirigir para evitar reenvío con F5
         header("Location: " . $_SERVER['PHP_SELF'] . "?reserva=ok");
         exit;
     }
@@ -57,31 +56,66 @@ try {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reservas del Albergue</title>
+    <title>Reservas del Albergue Rural</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .month { margin-bottom: 20px; }
-        .month h3 { background: #007bff; color: white; padding: 5px; font-size: 1rem; }
-        table.calendar { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-        table.calendar th, table.calendar td {
-            border: 1px solid #ccc;
-            width: 14.28%;
-            height: 30px;
+        body {
+            background-color: #fdf6e3; /* Beige claro */
+            font-family: 'Georgia', serif;
+        }
+        header {
+            background-color: #d2b48c; /* Marrón claro */
+            color: #4b2e2e;
             text-align: center;
-            vertical-align: top;
-            padding: 2px;
+            padding: 20px;
+            border-bottom: 4px solid #8b4513;
+        }
+        header img {
+            height: 60px;
+            margin-right: 10px;
+        }
+        .month h3 {
+            background: #8b4513; /* Marrón oscuro */
+            color: #fff;
+            padding: 8px;
+            font-size: 1rem;
+        }
+        table.calendar {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        table.calendar th, table.calendar td {
+            border: 1px solid #a0522d;
+            width: 14.28%;
+            height: 35px;
+            text-align: center;
+            vertical-align: middle;
         }
         .reservado {
-            background-color: #f8d7da;
-            border: 1px solid #dc3545;
-            color: #721c24;
+            background-color: #f4cccc;
+            border: 1px solid #a94442;
+            color: #a94442;
             font-weight: bold;
+        }
+        .card-header {
+            background-color: #8b4513;
+            color: #fff;
+        }
+        .btn-success {
+            background-color: #6b8e23; /* Verde oliva */
+            border: none;
         }
     </style>
 </head>
-<body class="bg-light">
+<body>
+<header>
+    <img src="logo-albergue.png" alt="Logo Albergue Rural">
+    <h1>Albergue Rural</h1>
+</header>
+
 <div class="container py-4">
-    <h1 class="mb-4">Calendario de Reservas 2025</h1>
+    <h2 class="mb-4">Calendario de Reservas 2025</h2>
 
     <?php
     $anio = 2025;
@@ -139,7 +173,7 @@ try {
     ?>
 
     <div class="card mt-4">
-        <div class="card-header bg-primary text-white">Formulario de Reserva</div>
+        <div class="card-header">Formulario de Reserva</div>
         <div class="card-body">
             <form method="POST">
                 <div class="mb-3">
