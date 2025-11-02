@@ -110,7 +110,6 @@ try {
 </head>
 <body>
 <header>
-    <img src="logo-albergue.png" alt="Logo Albergue Rural">
     <h1>Albergue Rural</h1>
 </header>
 
